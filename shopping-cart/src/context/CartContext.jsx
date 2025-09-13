@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const CartContext = createContext(null);
 
@@ -17,27 +17,33 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const addItem = (product, qty = 1) => {
-    setItems((prev) => {
-      const idx = prev.findIndex((p) => p.id === product.id);
-      if (idx >= 0) {
+    setItems(prev => {
+      const i = prev.findIndex(p => p.id === product.id);
+      if (i >= 0) {
         const copy = [...prev];
-        copy[idx] = { ...copy[idx], qty: copy[idx].qty + qty };
+        copy[i] = { ...copy[i], qty: copy[i].qty + qty };
         return copy;
       }
-      return [...prev, { id: product.id, title: product.title, price: product.price, image: product.image, qty }];
+      return [
+        ...prev,
+        { id: product.id, title: product.title, price: product.price, image: product.image, qty }
+      ];
     });
   };
 
-  const removeItem = (id) => setItems((prev) => prev.filter((p) => p.id !== id));
+  const removeItem = (id) => setItems(prev => prev.filter(p => p.id !== id));
+
   const updateQty = (id, qty) =>
-    setItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p)));
+    setItems(prev =>
+      prev.map(p => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p))
+    );
 
   const clear = () => setItems([]);
 
-  const count = useMemo(() => items.reduce((s, p) => s + p.qty, 0), [items]);
+  const totalItems = useMemo(() => items.reduce((s, p) => s + p.qty, 0), [items]);
   const total = useMemo(() => items.reduce((s, p) => s + p.price * p.qty, 0), [items]);
 
-  const value = { items, addItem, removeItem, updateQty, clear, count, total };
+  const value = { items, addItem, removeItem, updateQty, clear, totalItems, total };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
