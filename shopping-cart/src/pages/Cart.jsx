@@ -9,7 +9,7 @@ export default function Cart() {
       <div className="grid place-items-center py-20 text-center">
         <div className="space-y-4">
           <h1 className="text-2xl font-bold">Your cart is empty</h1>
-          <Link to="/" className="inline-block rounded-xl bg-brand-600 px-5 py-2.5 font-semibold text-white hover:bg-brand-700">
+          <Link to="/" className="inline-block rounded-xl bg-brand-600 px-5 py-2.5 font-semibold text-white">
             Browse products
           </Link>
         </div>
@@ -50,7 +50,7 @@ export default function Cart() {
             <div className="w-24 text-right font-semibold">${(item.price * item.qty).toFixed(2)}</div>
             <button
               onClick={() => removeItem(item.id)}
-              className="rounded-lg border px-3 py-2 text-sm hover:bg-gray-50"
+              className="rounded-lg border px-3 py-2 text-sm"
             >
               Remove
             </button>
@@ -68,10 +68,10 @@ export default function Cart() {
           <div className="my-3 border-t"></div>
           <div className="flex justify-between text-base font-semibold"><dt>Total</dt><dd>${total.toFixed(2)}</dd></div>
         </dl>
-        <button className="mt-5 w-full rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white hover:bg-brand-700">
+        <button className="mt-3 w-full rounded-xl border px-4 py-3 font-medium">
           Checkout
         </button>
-        <button onClick={clear} className="mt-3 w-full rounded-xl border px-4 py-3 font-medium hover:bg-gray-50">
+        <button onClick={clear} className="mt-3 w-full rounded-xl border px-4 py-3 font-medium">
           Clear cart
         </button>
       </aside>

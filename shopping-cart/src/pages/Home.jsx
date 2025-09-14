@@ -33,7 +33,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold tracking-tight">Products</h1>
         <button
           onClick={()=>setFiltersOpen(true)}
-          className="sm:hidden rounded-full border px-3 py-1.5 text-sm hover:bg-gray-50"
+          className="sm:hidden rounded-full border px-3 py-1.5 text-sm"
         >
           Filters
         </button>

@@ -5,7 +5,7 @@ export default function Navbar() {
   const { totalItems } = useCart();
 
   const linkCls = ({ isActive }) =>
-    `text-sm font-medium transition ${isActive ? "text-black" : "text-gray-600 hover:text-black"}`;
+    `text-sm font-medium transition ${isActive ? "text-black" : "text-gray-600 :text-black"}`;
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b">

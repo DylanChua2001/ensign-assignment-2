@@ -23,7 +23,7 @@ export default function FilterSidebar({ products = [], filters, setFilters, open
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => set("category", "")}
-            className={`rounded-full border px-3 py-1.5 text-sm ${!filters.category ? "bg-black text-white border-black" : "hover:bg-gray-50"}`}
+            className={`rounded-full border px-3 py-1.5 text-sm ${!filters.category ? "bg-black text-white border-black" : ""}`}
           >
             All
           </button>
@@ -31,7 +31,7 @@ export default function FilterSidebar({ products = [], filters, setFilters, open
             <button
               key={c}
               onClick={() => set("category", c)}
-              className={`rounded-full border px-3 py-1.5 text-sm ${filters.category===c ? "bg-black text-white border-black" : "hover:bg-gray-50"}`}
+              className={`rounded-full border px-3 py-1.5 text-sm ${filters.category===c ? "bg-black text-white border-black" : ""}`}
             >
               {c}
             </button>
@@ -64,7 +64,7 @@ export default function FilterSidebar({ products = [], filters, setFilters, open
 
       <button
         onClick={()=>setFilters({ q:"", category:"", minPrice:null, maxPrice:null })}
-        className="w-full rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
+        className="w-full rounded-xl border px-4 py-2 text-sm"
       >
         Clear filters
       </button>

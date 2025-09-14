@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProduct } from "../lib/api";
 import { useCart } from "../context/CartContext";
-import Toast from "../components/Toast"; // ✅ import Toast
+import Toast from "../components/Toast";
 
 function Stars({ rate = 0 }) {
   const full = Math.round(rate);
@@ -27,7 +27,7 @@ export default function ProductDetail() {
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
 
-  const [toast, setToast] = useState(false); // ✅ toast state
+  const [toast, setToast] = useState(false);
 
   useEffect(() => {
     getProduct(id).then(setProduct);
@@ -44,7 +44,7 @@ export default function ProductDetail() {
     <div className="max-w-6xl mx-auto px-6 py-10">
       {/* Breadcrumbs */}
       <nav className="mb-6 text-sm text-gray-500">
-        <Link to="/" className="hover:text-gray-800">Home</Link>
+        <Link to="/">Home</Link>
         <span className="mx-2">/</span>
         <span className="capitalize">{product.category}</span>
       </nav>
@@ -96,7 +96,7 @@ export default function ProductDetail() {
         </section>
       </div>
 
-      {/* ✅ Toast */}
+      {/* Toast */}
       <Toast
         message="✅ Item added to cart"
         show={toast}
