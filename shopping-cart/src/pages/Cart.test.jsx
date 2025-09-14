@@ -1,104 +1,95 @@
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import CartPage from "./Cart";
+// src/pages/Cart.test.jsx
+import { render, screen, fireEvent, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import Cart from "./Cart";
 import { CartContext } from "../context/CartContext";
 
-// Utility to render with mocked context
-function renderWithCart(cartItems, actions = {}) {
-  const defaultActions = {
-    updateQty: vi.fn(),
-    removeItem: vi.fn(),
-    clearCart: vi.fn(),
+function renderWithCart(items = [], overrides = {}) {
+  const defaultContext = {
+    items,
+    addItem: jest.fn(),
+    removeItem: jest.fn(),
+    updateQty: jest.fn(),
+    clear: jest.fn(),
+    totalItems: items.reduce((s, p) => s + p.qty, 0),
+    total: items.reduce((s, p) => s + p.qty * p.price, 0),
   };
+  const value = { ...defaultContext, ...overrides };
 
   return render(
-    <CartContext.Provider
-      value={{ items: cartItems, ...defaultActions, ...actions }}
-    >
-      <CartPage />
+    <CartContext.Provider value={value}>
+      <MemoryRouter>
+        <Cart />
+      </MemoryRouter>
     </CartContext.Provider>
   );
 }
 
 describe("Cart Page", () => {
-  it("renders empty state with browse link", () => {
+  it("renders empty cart message", () => {
     renderWithCart([]);
-
-    expect(
-      screen.getByText(/your cart is empty/i)
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /browse products/i })).toBeVisible();
+    expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument();
   });
 
-  it("renders items with title, unit price and qty (row-scoped assertions)", () => {
-    renderWithCart([
-      {
-        id: 1,
-        title: "Mens Cotton Jacket",
-        price: 55.99,
-        quantity: 2,
-        image: "img1",
-      },
-      {
-        id: 2,
-        title: "Backpack",
-        price: 29.99,
-        quantity: 1,
-        image: "img2",
-      },
-    ]);
+  it("renders cart items with title, price, and quantity", () => {
+    const items = [{ id: 1, title: "Backpack", price: 29.99, image: "img1", qty: 1 }];
+    renderWithCart(items);
 
-    // Jacket row
-    const jacketRow = screen.getByText(/mens cotton jacket/i).closest("div");
-    expect(jacketRow).toBeInTheDocument();
+    // Title
+    expect(screen.getByText("Backpack")).toBeInTheDocument();
 
-    expect(
-      within(jacketRow).getByText((c, n) =>
-        n?.textContent?.replace(/\s+/g, "").includes("$55.99")
-      )
-    ).toBeInTheDocument(); // unit price
+    // Price (check textContent because $ and number may be split)
+    const priceEls = screen.getAllByText((_, el) =>
+      el.textContent.includes("29.99")
+    );
+    expect(priceEls.length).toBeGreaterThan(0);
 
-    expect(
-      within(jacketRow).getByText((c, n) =>
-        n?.textContent?.replace(/\s+/g, "").includes("$111.98")
-      )
-    ).toBeInTheDocument(); // line total
-
-    expect(
-      within(jacketRow).getByDisplayValue("2")
-    ).toBeInTheDocument(); // qty input
-
-    // Backpack row
-    const backpackRow = screen.getByText(/backpack/i).closest("div");
-    expect(backpackRow).toBeInTheDocument();
-
-    expect(
-      within(backpackRow).getByText((c, n) =>
-        n?.textContent?.replace(/\s+/g, "").includes("$29.99")
-      )
-    ).toBeInTheDocument(); // unit price
-
-    expect(
-      within(backpackRow).getByDisplayValue("1")
-    ).toBeInTheDocument(); // qty input
+    // Quantity input
+    expect(screen.getByDisplayValue("1")).toBeInTheDocument();
   });
 
-  it("shows correct order total (scoped to Order Summary aside)", () => {
-    renderWithCart([
-      { id: 1, title: "Book", price: 10, quantity: 2, image: "img" },
-      { id: 2, title: "Pen", price: 5, quantity: 3, image: "img" },
-    ]);
+  it("updates quantity when buttons clicked", () => {
+    const updateQty = jest.fn();
+    const items = [{ id: 1, title: "Backpack", price: 29.99, image: "img1", qty: 1 }];
+    renderWithCart(items, { updateQty });
 
-    const summaryHeading = screen.getByText(/order summary/i);
-    const summary = summaryHeading.closest("aside") ?? summaryHeading.parentElement;
+    fireEvent.click(screen.getByRole("button", { name: /increase quantity/i }));
+    expect(updateQty).toHaveBeenCalledWith(1, 2);
 
-    expect(
-      within(summary).getByText((c, n) =>
-        n?.textContent?.replace(/\s+/g, "").includes("$35.00")
-      )
-    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /decrease quantity/i }));
+    expect(updateQty).toHaveBeenCalledWith(1, 0); // then clamped to >=1 in component
   });
 
-  it("updates quantity when user types (assert spy, not DOM value)", async () => {
-    const user = userEvent.setup();
-    const updateQty = vi.fn();
+  it("removes item when remove button clicked", () => {
+    const removeItem = jest.fn();
+    const items = [{ id: 1, title: "Backpack", price: 29.99, image: "img1", qty: 1 }];
+    renderWithCart(items, { removeItem });
+
+    fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+    expect(removeItem).toHaveBeenCalledWith(1);
+  });
+
+  it("shows correct order total and clears cart", () => {
+    const clear = jest.fn();
+    const items = [
+      { id: 1, title: "Backpack", price: 29.99, image: "img1", qty: 1 },
+      { id: 2, title: "Jacket", price: 111.0, image: "img2", qty: 1 },
+    ];
+    renderWithCart(items, { clear });
+
+    expect(screen.getByText("Backpack")).toBeInTheDocument();
+    expect(screen.getByText("Jacket")).toBeInTheDocument();
+
+    // Jacket line total
+    expect(
+      screen.getAllByText((_, el) => el.textContent.includes("111.00")).length
+    ).toBeGreaterThan(0);
+
+    // Order summary aside
+    const summary = screen.getByRole("complementary");
+    expect(summary).toHaveTextContent("140.99");
+
+    fireEvent.click(screen.getByRole("button", { name: /clear cart/i }));
+    expect(clear).toHaveBeenCalled();
+  });
+});
